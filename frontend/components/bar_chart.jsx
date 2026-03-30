@@ -34,7 +34,7 @@ const Bar_Chart = ({ contributions = defaultContributions, mode }) => {
   const { labels, keys } = config[mode];
 
  
-  const values = keys.map((key) => Number(contributions[key]) ?? defaultContributions[key]);
+  const values = keys.map((key) => Number(contributions[key]) * 100);
 
   
   const data = {
