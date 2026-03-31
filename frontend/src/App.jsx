@@ -3,6 +3,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import Srcc from '../components/srcc.jsx'
+import MainTabs from '../components/MainTabs.jsx'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -10,7 +11,7 @@ function App() {
   return (
     <>
       <div className="bg-black p-16 h-full">
-        <Srcc />
+        <MainTabs />
 
       </div>
     </>

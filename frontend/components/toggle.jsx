@@ -14,8 +14,7 @@ const Toggle = ({mode,setMode}) => {
             absolute top-0 bottom-0 w-[calc(50%)] rounded-full bg-yellow-400 shadow-sm
             transition-all duration-300 ease-in-out transform
             ${mode === 0 ? 'translate-x-0' : 'translate-x-full'}
-          `}
-        />
+          `} />
 
         {/* Short Term Button */}
         <button
