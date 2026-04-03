@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quant-Alpha Terminal v3.0</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Share Tech Mono', 'Consolas', monospace; background: #080808; }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    @keyframes scroll-left {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .pulse-dot { animation: pulse-dot 1.5s infinite; }
+    .scroll-headline { display: inline-block; animation: scroll-left 30s linear infinite; white-space: nowrap; }
+    .fade-in { animation: fadeIn 0.4s ease forwards; }
+
+    canvas { width: 100% !important; }
+  </style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+/* ── tiny helpers ── */
+const fmt = (v, d = 4) => (v >= 0 ? "+" : "") + parseFloat(v).toFixed(d);
+const pct = v => (parseFloat(v) * 100).toFixed(1) + "%";
+
+/* ── stat card ── */
+function StatCard({ label, value, color }) {
+  return (
+    <div className="bg-[#111] border border-[#1e1e1e] rounded-lg p-4 text-center fade-in">
+      <div className="text-xl font-bold mb-1" style={{ color }}>{value}</div>
+      <div className="text-[10px] uppercase tracking-widest text-[#555]">{label}</div>
+    </div>
+  );
+}
+
+/* ── IPO input screen ── */
+function InputScreen({ onStart }) {
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async () => {
+    if (!name.trim()) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("http://127.0.0.1:8000/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ipo_name: name.trim() }),
+      });
+      if (!res.ok) throw new Error("Server error");
+      onStart(name.trim());
+    } catch (e) {
+      setError("Could not connect to server. Is main.py running?");
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#080808]">
+      <div className="bg-[#0f0f0f] border border-[#222] rounded-2xl p-10 w-full max-w-md fade-in">
+        <div className="text-center mb-8">
+          <div className="text-[#ffeb3b] text-2xl font-bold tracking-widest mb-1">QUANT-ALPHA</div>
+          <div className="text-[#333] text-xs tracking-widest uppercase">IPO Sentiment Engine v3.0</div>
+        </div>
+
+        <div className="mb-2 text-[#555] text-xs uppercase tracking-widest">IPO / Company Name</div>
+        <input
+          className="w-full bg-[#080808] border border-[#333] rounded-lg px-4 py-3 text-[#eee] text-sm outline-none focus:border-[#ffeb3b] transition-colors mb-4"
+          placeholder="e.g. Meesho, Shadowfax, APL Apollo..."
+          value={name}
+          onChange={e => setName(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handleSubmit()}
+        />
+
+        {error && <div className="text-[#ff5252] text-xs mb-4">{error}</div>}
+
+        <button
+          onClick={handleSubmit}
+          disabled={loading || !name.trim()}
+          className="w-full py-3 rounded-lg font-bold text-sm tracking-widest uppercase transition-all"
+          style={{
+            background: loading || !name.trim() ? "#1a1a1a" : "#ffeb3b",
+            color: loading || !name.trim() ? "#333" : "#080808",
+            cursor: loading || !name.trim() ? "not-allowed" : "pointer"
+          }}
+        >
+          {loading ? "STARTING ENGINE..." : "▶  ANALYZE SENTIMENT"}
+        </button>
+
+        <div className="mt-6 text-[#2a2a2a] text-[10px] text-center leading-relaxed">
+          Powered by FinBERT · Google News RSS · India VIX
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── main dashboard ── */
+function Dashboard({ ipoName, onReset }) {
+  const ticker = ipoName.toUpperCase().replace(/ /g, "_") + "_IPO";
+
+  const [status, setStatus]     = useState("CONNECTING");
+  const [regime, setRegime]     = useState({ text: "SYNCING...", color: "#888" });
+  const [stats, setStats]       = useState({ velocity: "--", conf: "--", pos: "--", neg: "--" });
+  const [bias, setBias]         = useState({ pos: 50, neg: 50 });
+  const [headline, setHeadline] = useState("Waiting for first signal...");
+
+  const mainChartRef  = useRef(null);
+  const convChartRef  = useRef(null);
+  const mainCanvasRef = useRef(null);
+  const convCanvasRef = useRef(null);
+  const vHistoryRef   = useRef([]);
+  const socketRef     = useRef(null);
+
+  /* ── build charts once ── */
+  useEffect(() => {
+    mainChartRef.current = new Chart(mainCanvasRef.current.getContext("2d"), {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [
+          { label: "SMA Trend",      data: [], borderColor: "#ffeb3b",              borderWidth: 3, pointRadius: 0, tension: 0.4 },
+          { label: "Raw Velocity",   data: [], borderColor: "rgba(0,229,255,0.35)", borderWidth: 1, pointRadius: 3, tension: 0.2 },
+          { label: "Bull Threshold", data: [], borderColor: "rgba(0,230,118,0.25)", borderDash: [8,5], borderWidth: 1, pointRadius: 0 },
+          { label: "Bear Threshold", data: [], borderColor: "rgba(255,82,82,0.25)", borderDash: [8,5], borderWidth: 1, pointRadius: 0 },
+        ],
+      },
+      options: {
+        animation: false,
+        scales: {
+          x: { ticks: { color: "#444", maxTicksLimit: 8 }, grid: { color: "#151515" } },
+          y: { min: -3, max: 3,          ticks: { color: "#444" },              grid: { color: "#1a1a1a" } },
+        },
+        plugins: { legend: { labels: { color: "#555", boxWidth: 12 } } },
+      },
+    });
+
+    convChartRef.current = new Chart(convCanvasRef.current.getContext("2d"), {
+      type: "scatter",
+      data: {
+        datasets: [{
+          label: "Signals",
+          data: [],
+          backgroundColor: ctx => {
+            const v = ctx.raw ? ctx.raw.x : 0;
+            return v > 0.04 ? "rgba(0,230,118,0.7)" : v < -0.04 ? "rgba(255,82,82,0.7)" : "rgba(255,235,59,0.5)";
+          },
+          pointRadius: 6,
+        }],
+      },
+      options: {
+        animation: false,
+        scales: {
+          x: { min: -3, max: 3, title: { display: true, text: "Velocity", color: "#555" }, ticks: { color: "#444" }, grid: { color: "#151515" } },
+          y: { min: 0.3, max: 1.0, title: { display: true, text: "Confidence", color: "#555" }, ticks: { color: "#444" }, grid: { color: "#151515" } },
+        },
+        plugins: { legend: { display: false } },
+      },
+    });
+
+    return () => {
+      mainChartRef.current?.destroy();
+      convChartRef.current?.destroy();
+    };
+  }, []);
+
+  /* ── websocket ── */
+  const connect = useCallback(() => {
+    const ws = new WebSocket("ws://127.0.0.1:8000/ws/v_t_stream");
+    socketRef.current = ws;
+
+    ws.onopen  = () => setStatus("LIVE");
+    ws.onclose = () => {
+      setStatus("RECONNECTING");
+      setTimeout(connect, 3000);
+    };
+
+    ws.onmessage = event => {
+      const d = JSON.parse(event.data);
+      const time = new Date().toLocaleTimeString();
+
+      setHeadline("▶  " + (d.headline || "No headline"));
+
+      const v = parseFloat(d.velocity);
+      const velColor = v > 0.04 ? "#00e676" : v < -0.04 ? "#ff5252" : "#ffeb3b";
+      setStats({
+        velocity: fmt(v),
+        conf:     pct(d.confidence),
+        pos:      pct(d.pos),
+        neg:      pct(d.neg),
+        velColor,
+      });
+
+      const total = (d.pos || 0.5) + (d.neg || 0.5);
+      setBias({
+        pos: ((d.pos / total) * 100).toFixed(1),
+        neg: ((d.neg / total) * 100).toFixed(1),
+      });
+
+      // SMA
+      vHistoryRef.current.push(v);
+      if (vHistoryRef.current.length > 5) vHistoryRef.current.shift();
+      const sma = vHistoryRef.current.reduce((a, b) => a + b, 0) / vHistoryRef.current.length;
+
+      // regime
+      if (sma > 0.04)       setRegime({ text: "🚀 BULLISH", color: "#00e676" });
+      else if (sma < -0.04) setRegime({ text: "📉 BEARISH", color: "#ff5252" });
+      else                  setRegime({ text: "● NEUTRAL",  color: "#888"    });
+
+      // main chart
+      const mc = mainChartRef.current;
+      mc.data.labels.push(time);
+      mc.data.datasets[0].data.push(sma);
+      mc.data.datasets[1].data.push(v);
+      mc.data.datasets[2].data.push(0.04);
+      mc.data.datasets[3].data.push(-0.04);
+      if (mc.data.labels.length > 30) {
+        mc.data.labels.shift();
+        mc.data.datasets.forEach(s => s.data.shift());
+      }
+      mc.update("none");
+
+      // conviction
+      const cc = convChartRef.current;
+      cc.data.datasets[0].data.push({ x: v, y: d.confidence });
+      if (cc.data.datasets[0].data.length > 20) cc.data.datasets[0].data.shift();
+      cc.update("none");
+    };
+  }, []);
+
+  useEffect(() => { connect(); return () => socketRef.current?.close(); }, [connect]);
+
+  const handleStop = async () => {
+    await fetch("http://127.0.0.1:8000/stop", { method: "POST" });
+    socketRef.current?.close();
+    onReset();
+  };
+
+  /* ── status indicator ── */
+  const statusColor = status === "LIVE" ? "#00e676" : status === "RECONNECTING" ? "#ff5252" : "#555";
+  const dotClass = status === "LIVE" ? "pulse-dot" : "";
+
+  return (
+    <div className="min-h-screen bg-[#080808] text-[#eee] p-5">
+      <div className="max-w-[1400px] mx-auto grid grid-cols-2 gap-5">
+
+        {/* ── HEADER ── */}
+        <div className="col-span-2 bg-[#121212] border border-[#1e1e1e] rounded-lg px-5 py-4 flex justify-between items-center border-b-2 border-b-[#ffeb3b]">
+          <div>
+            <span className="text-[#ffeb3b] font-bold text-lg tracking-widest">QUANT-ALPHA TERMINAL</span>
+            <span className="text-xs text-[#333] ml-3">v3.0 // IPO SENTIMENT ENGINE</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="bg-[#1a1a1a] border border-[#333] px-3 py-1 rounded text-[#ffeb3b] text-sm">{ticker}</span>
+            <span className="flex items-center gap-2 text-xs" style={{ color: statusColor }}>
+              <span className={`inline-block w-2 h-2 rounded-full ${dotClass}`} style={{ background: statusColor }} />
+              {status}
+            </span>
+            <div className="text-xl font-bold" style={{ color: regime.color }}>{regime.text}</div>
+            <button
+              onClick={handleStop}
+              className="text-xs px-3 py-1 rounded border border-[#333] text-[#555] hover:text-[#ff5252] hover:border-[#ff5252] transition-colors"
+            >
+              ■ STOP
+            </button>
+          </div>
+        </div>
+
+        {/* ── STATS ── */}
+        <div className="col-span-2 grid grid-cols-4 gap-3">
+          <StatCard label="Sentiment Velocity" value={stats.velocity} color={stats.velColor || "#ffeb3b"} />
+          <StatCard label="AI Confidence"      value={stats.conf}     color="#00b0ff" />
+          <StatCard label="Bullish Bias"        value={stats.pos}      color="#00e676" />
+          <StatCard label="Bearish Bias"        value={stats.neg}      color="#ff5252" />
+        </div>
+
+        {/* ── MAIN CHART ── */}
+        <div className="bg-[#121212] border border-[#1e1e1e] rounded-lg p-5">
+          <div className="text-[#555] text-[11px] uppercase tracking-widest mb-4">Sentiment Velocity — SMA Trend vs Raw Signal</div>
+          <canvas ref={mainCanvasRef} height={320} />
+        </div>
+
+        {/* ── CONVICTION SCATTER ── */}
+        <div className="bg-[#121212] border border-[#1e1e1e] rounded-lg p-5">
+          <div className="text-[#555] text-[11px] uppercase tracking-widest mb-4">Conviction Cluster (Velocity × Confidence)</div>
+          <canvas ref={convCanvasRef} height={320} />
+        </div>
+
+        {/* ── TUG OF WAR ── */}
+        <div className="col-span-2 bg-[#121212] border border-[#1e1e1e] rounded-lg p-5">
+          <div className="text-[#555] text-[11px] uppercase tracking-widest mb-4">Sentiment Tug-of-War — Direct Model Bias</div>
+          <div className="h-4 w-full bg-[#111] rounded-full flex overflow-hidden border border-[#2a2a2a]">
+            <div className="h-full transition-all duration-700" style={{ width: bias.pos + "%", background: "linear-gradient(90deg,#00c853,#00e676)" }} />
+            <div className="h-full transition-all duration-700" style={{ width: bias.neg + "%", background: "linear-gradient(90deg,#ff5252,#d50000)" }} />
+          </div>
+          <div className="flex justify-between mt-2 text-[11px]">
+            <span style={{ color: "#00e676" }}>BULLISH {bias.pos}%</span>
+            <span style={{ color: "#ff5252" }}>{bias.neg}% BEARISH</span>
+          </div>
+        </div>
+
+        {/* ── HEADLINE ── */}
+        <div className="col-span-2 bg-[#121212] border border-[#1e1e1e] rounded-lg p-5 overflow-hidden">
+          <div className="text-[#555] text-[11px] uppercase tracking-widest mb-3">Live Signal Feed</div>
+          <div className="overflow-hidden whitespace-nowrap">
+            <span className="scroll-headline text-[#888] text-sm">{headline}</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+/* ── app root ── */
+function App() {
+  const [ipoName, setIpoName] = useState(null);
+
+  return ipoName
+    ? <Dashboard ipoName={ipoName} onReset={() => setIpoName(null)} />
+    : <InputScreen onStart={setIpoName} />;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
