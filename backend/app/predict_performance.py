@@ -1,10 +1,13 @@
 import joblib
 import pandas as pd
 import numpy as np
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class ModelService:
     def __init__(self):
-        self.model = joblib.load("model.pkl")
+        self.model = joblib.load(os.path.join(BASE_DIR, "model.pkl"))
         self.label_map = {0: "Below Average", 1: "Average", 2: "Above Average"}
         
         # Raw names — what user inputs
@@ -29,15 +32,10 @@ class ModelService:
         return self.raw_feature_names
 
     def predict(self, input_dict: dict):
-        # Log transform each raw input
         transformed = {f'{k}_log_transformed': np.log1p(v) for k, v in input_dict.items()}
-
-
         df = pd.DataFrame([transformed])[self.transformed_feature_names]
-
         prediction = self.model.predict(df)[0]
         probabilities = self.model.predict_proba(df)[0]
-
         return {
             "prediction": int(prediction),
             "label": self.label_map[int(prediction)],
