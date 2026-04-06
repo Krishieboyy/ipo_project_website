@@ -32,7 +32,7 @@ class ModelService:
         # Log transform each raw input
         transformed = {f'{k}_log_transformed': np.log1p(v) for k, v in input_dict.items()}
 
-        # Build DataFrame in correct column order
+
         df = pd.DataFrame([transformed])[self.transformed_feature_names]
 
         prediction = self.model.predict(df)[0]

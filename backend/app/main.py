@@ -7,6 +7,7 @@ from app.schemas import PredictRequest
 from app.services.scorer import predict
 from pydantic import BaseModel
 from predict_performance import ModelService
+from typing import Dict
 
 app = FastAPI(title="IPO Scorer API", version="1.0.0")
 
@@ -33,14 +34,14 @@ def health():
     return {"status": "ok"}
 
 class PredictionInput(BaseModel):
-    features: dict
+    features: Dict[str, float]
 
 @app.get("/features")
 def get_features():
     return {"features": model_service.get_features()}
 
 #fec
-@app.post("/predict_performance") 
+@app.post("/deep_analysis") 
 def predict(input_data: PredictionInput):
     return model_service.predict(input_data.features)
 
