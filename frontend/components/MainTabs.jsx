@@ -5,7 +5,7 @@ import FEC from "./fec.jsx";
 
 export default function MainTabs() {
 
-  const [activeTab, setActiveTab] = useState("fec");
+  const [activeTab, setActiveTab] = useState("srcc");
 
   const tabBtn = (isActive) =>
     `px-6 py-3 rounded-full text-sm font-semibold transition ${
