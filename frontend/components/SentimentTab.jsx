@@ -88,14 +88,10 @@ function InputScreen({ onStart }) {
     <div className="min-h-[70vh] flex items-center justify-center bg-transparent">
       <div className="bg-[#0f0f0f] border border-[#222] rounded-2xl p-10 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="text-[#ffeb3b] text-2xl font-bold tracking-widest mb-1">
-            QUANT-ALPHA
-          </div>
-          <div className="text-[#333] text-xs tracking-widest uppercase">
-            IPO Sentiment Engine v3.0
+          <div className="text-[#F0B90B] text-2xl font-bold tracking-widest mb-1">
+            IPO SENTIMENT ENGINE
           </div>
         </div>
-
         <div className="mb-2 text-[#555] text-xs uppercase tracking-widest">
           IPO / Company Name
         </div>
@@ -120,7 +116,7 @@ function InputScreen({ onStart }) {
             cursor: loading || !name.trim() ? "not-allowed" : "pointer",
           }}
         >
-          {loading ? "STARTING ENGINE..." : "▶ ANALYZE SENTIMENT"}
+          {loading ? "STARTING ENGINE..." : "ANALYZE SENTIMENT"}
         </button>
 
         <div className="mt-6 text-[#2a2a2a] text-[10px] text-center leading-relaxed">
@@ -402,9 +398,8 @@ function Dashboard({ ipoName, onReset }) {
         <div className="lg:col-span-2 bg-[#121212] border border-[#1e1e1e] rounded-lg px-5 py-4 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b-2 border-b-[#ffeb3b]">
           <div>
             <span className="text-[#ffeb3b] font-bold text-lg tracking-widest">
-              QUANT-ALPHA TERMINAL
+              IPO SENTIMENT ENGINE
             </span>
-            <span className="text-xs text-[#333] ml-3">v3.0 // IPO SENTIMENT ENGINE</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
