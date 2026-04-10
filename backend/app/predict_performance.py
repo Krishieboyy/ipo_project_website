@@ -1,3 +1,5 @@
+import os
+
 import joblib
 import pandas as pd
 import numpy as np
@@ -7,7 +9,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class ModelService:
     def __init__(self):
-        self.model = joblib.load(os.path.join(BASE_DIR, "model.pkl"))
+        self.model = joblib.load("model.pkl")
         self.label_map = {0: "Below Average", 1: "Average", 2: "Above Average"}
         
         # Raw names — what user inputs

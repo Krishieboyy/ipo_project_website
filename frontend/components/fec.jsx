@@ -33,6 +33,26 @@ export default function FEC() {
       "HNI": Number(form.hni),
       "RII": Number(form.rii),
     };
+<<<<<<< HEAD
+=======
+    try{
+      const res=await fetch("http://localhost:8000/deep/deep_analysis",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+      },
+      body:JSON.stringify(payload),
+    });
+    const data=await res.json();
+    if(!res.ok){
+      throw new Error(data.detail || "Something went wrong");
+    }
+    }catch(err){
+      console.error(err);
+      alert("Could not get response from backend:",err.message);
+    }
+    
+>>>>>>> 8f7c921 (routing)
 
     const payload = { features: featuresData };
 

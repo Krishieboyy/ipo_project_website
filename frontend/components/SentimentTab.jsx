@@ -25,7 +25,7 @@ Chart.register(
 );
 
 const API_BASE = "http://127.0.0.1:8000";
-const WS_URL = "ws://127.0.0.1:8000/ws/v_t_stream";
+const WS_URL = "ws://127.0.0.1:8000/sentiment/ws/v_t_stream";
 
 const fmt = (v, d = 4) => {
   const num = parseFloat(v);
@@ -64,7 +64,7 @@ function InputScreen({ onStart }) {
     setError("");
 
     try {
-      const res = await fetch(`${API_BASE}/start`, {
+      const res = await fetch(`${API_BASE}/sentiment/start`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -381,7 +381,7 @@ function Dashboard({ ipoName, onReset }) {
 
   const handleStop = async () => {
     try {
-      await fetch(`${API_BASE}/stop`, { method: "POST" });
+      await fetch(`${API_BASE}/sentiment/stop`, { method: "POST" });
     } catch (e) {
       console.error(e);
     }

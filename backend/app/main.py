@@ -13,34 +13,22 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-model_service = ModelService()
-
-class PredictionInput(BaseModel):
-    features: Dict[str, float]
 
 @app.get("/")
 def root():
     return {"message": "IPO Scorer backend is running"}
 
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-@app.get("/features")
-def get_features():
-    return {"features": model_service.get_features()}
-
-@app.post("/deep_analysis")
-def deep_analysis(input_data: PredictionInput):
-    return model_service.predict(input_data.features)
 
 @app.post("/predict")
 def predict_ipo(request: PredictRequest):
