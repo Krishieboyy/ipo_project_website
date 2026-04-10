@@ -2,6 +2,7 @@ import { useState } from "react";
 import Srcc from "./srcc.jsx";
 import SentimentTab from "./SentimentTab.jsx";
 import FEC from "./fec.jsx";
+import Sectorwise from "./sectorwise.jsx"
 
 export default function MainTabs() {
 
@@ -21,6 +22,8 @@ export default function MainTabs() {
         return <Srcc />;
       case "fec":
         return <FEC />;
+      case "sectorwise":
+        return <Sectorwise />
       case "sentiment":
       default:
         return <SentimentTab />;
@@ -51,6 +54,12 @@ export default function MainTabs() {
           onClick={() => setActiveTab("fec")}
         >
           Deep Analysis
+        </button>
+        <button
+          className={tabBtn(activeTab === "sectorwise")}
+          onClick={() => setActiveTab("sectorwise")}
+        >
+          Sector wise analysis
         </button>
         
       </div>
