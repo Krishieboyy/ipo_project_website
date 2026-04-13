@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import ReactSpeedometer from "react-d3-speedometer";
+const API_BASE = import.meta.env.VITE_API_BASE;
+const WS_BASE = import.meta.env.VITE_WS_BASE;
 
 const Gauge = ({ value = 79 }) => {
   const [displayValue, setDisplayValue] = useState(0);

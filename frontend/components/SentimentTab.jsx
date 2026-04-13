@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+const API_BASE = import.meta.env.VITE_API_BASE;
+const WS_BASE = import.meta.env.VITE_WS_BASE;
 import {
   Chart,
   LineController,
@@ -23,9 +25,6 @@ Chart.register(
   Legend,
   ScatterController
 );
-
-const API_BASE = "http://127.0.0.1:8000";
-const WS_URL = "ws://127.0.0.1:8000/sentiment/ws/v_t_stream";
 
 const fmt = (v, d = 4) => {
   const num = parseFloat(v);

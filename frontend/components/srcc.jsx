@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import Toggle from "./toggle.jsx";
 import Gauge from "./gauge.jsx";
 import Bar_Chart from "./bar_chart.jsx";
+const API_BASE = import.meta.env.VITE_API_BASE;
+const WS_BASE = import.meta.env.VITE_WS_BASE;
 
 //to display scores and returns
 const ResultCard = ({ mode, result }) => {

@@ -3,6 +3,8 @@ import Srcc from "./srcc.jsx";
 import SentimentTab from "./SentimentTab.jsx";
 import FEC from "./fec.jsx";
 import Sectorwise from "./sectorwise.jsx"
+const API_BASE = import.meta.env.VITE_API_BASE;
+const WS_BASE = import.meta.env.VITE_WS_BASE;
 
 export default function MainTabs() {
 

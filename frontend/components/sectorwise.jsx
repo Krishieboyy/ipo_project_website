@@ -1,4 +1,6 @@
 import { useState } from "react";
+const API_BASE = import.meta.env.VITE_API_BASE;
+const WS_BASE = import.meta.env.VITE_WS_BASE;
 
 const SECTORS = [
   "Banking & Nbfc",
