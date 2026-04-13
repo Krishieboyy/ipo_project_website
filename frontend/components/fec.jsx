@@ -6,7 +6,7 @@ export default function FEC() {
     offer_price: "",
     qib: "",
     hni: "",
-    rii: ""
+    rii: "",
   });
 
   const [result, setResult] = useState(null);
@@ -29,38 +29,31 @@ export default function FEC() {
     const featuresData = {
       "Issue_Size(crores)": Number(form.issue_size),
       "Offer Price": Number(form.offer_price),
-      "QIB": Number(form.qib),
-      "HNI": Number(form.hni),
-      "RII": Number(form.rii),
+      QIB: Number(form.qib),
+      HNI: Number(form.hni),
+      RII: Number(form.rii),
     };
-    try{
-      const res=await fetch("http://localhost:8000/deep/deep_analysis",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-      },
-      body:JSON.stringify(payload),
-    });
-    const data=await res.json();
-    if(!res.ok){
-      throw new Error(data.detail || "Something went wrong");
-    }
-    }catch(err){
-      console.error(err);
-      alert("Could not get response from backend:",err.message);
-    }
+
     const payload = { features: featuresData };
 
     try {
-      const res = await fetch("http://localhost:8001/deep_analysis", {
+      const res = await fetch("http://localhost:8000/deep/deep_analysis", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Something went wrong");
+
+      if (!res.ok) {
+        throw new Error(data.detail || "Something went wrong");
+      }
+
       setResult(data);
     } catch (err) {
+      console.error(err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -86,7 +79,7 @@ export default function FEC() {
   const labelMap = { 0: "Below Average", 1: "Average", 2: "Above Average" };
   const labelColor = {
     "Below Average": "text-red-400",
-    "Average": "text-yellow-400",
+    Average: "text-yellow-400",
     "Above Average": "text-green-400",
   };
 
@@ -96,7 +89,9 @@ export default function FEC() {
         <div className="absolute inset-0 rounded-3xl pointer-events-none bg-gradient-to-b from-white/5 via-transparent to-transparent"></div>
         <div className="absolute inset-0 rounded-3xl pointer-events-none bg-gradient-to-b from-[#F0B90B]/12 via-transparent to-transparent"></div>
 
-        <h2 className="text-[#EAECEF] mb-6 text-center md:text-left">Deep dive</h2>
+        <h2 className="text-[#EAECEF] mb-6 text-center md:text-left">
+          Deep dive
+        </h2>
 
         <div className="flex flex-col md:flex-row gap-8 md:gap-12 items-start justify-center">
           {/* INPUT SECTION */}
@@ -108,7 +103,9 @@ export default function FEC() {
                   name={field.name}
                   placeholder={field.placeholder}
                   value={form[field.name]}
-                  onChange={(e) => setForm({ ...form, [field.name]: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, [field.name]: e.target.value })
+                  }
                   className={inputClass}
                 />
               ))}
@@ -125,7 +122,9 @@ export default function FEC() {
 
               <div className="bg-[#0B0E11] rounded-2xl p-4 border border-[#2B3139]">
                 <p className="text-[#848E9C] text-sm">Prediction</p>
-                <p className={`text-2xl font-bold mt-1 ${labelColor[result.label]}`}>
+                <p
+                  className={`text-2xl font-bold mt-1 ${labelColor[result.label]}`}
+                >
                   {result.label}
                 </p>
               </div>

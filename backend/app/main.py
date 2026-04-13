@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.schemas import PredictRequest
 from app.services.scorer import predict as scorer_predict
-from app.predict_performance import ModelService
+#from app.predict_performance import ModelService
 from typing import Dict
 
 app = FastAPI(title="IPO Scorer API", version="1.0.0")

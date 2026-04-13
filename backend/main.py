@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.main import app as ipo_app
 from sentiment.main import app as sentiment_app
 from sector.main import app as sector_app
-
+from deep.main import app as deep_app
 
 app = FastAPI(title="Combined IPO Backend", version="1.0.0")
 
@@ -30,3 +30,4 @@ def health():
 app.mount("/ipo", ipo_app)
 app.mount("/sentiment", sentiment_app)
 app.mount("/sector", sector_app)
+app.mount("/deep", deep_app)
