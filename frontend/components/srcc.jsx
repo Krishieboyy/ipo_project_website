@@ -170,7 +170,7 @@ export default function Srcc() {
         <div className={glowLayer1}></div>
         <div className={glowLayer2}></div>
 
-        <h2 className="text-[#EAECEF] mb-6 text-center md:text-left">
+        <h2 className="text-[#EAECEF] text-2xl md:text-3xl mb-8">
           Predict Future Returns
         </h2>
 
