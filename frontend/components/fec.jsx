@@ -39,7 +39,7 @@ export default function FEC() {
     const payload = { features: featuresData };
 
     try {
-      const res = await fetch("http://localhost:8000/deep/deep_analysis", {
+      const res = await fetch(`${API_BASE}/deep/deep_analysis`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

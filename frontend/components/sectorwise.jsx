@@ -73,7 +73,7 @@ export default function IPOPredictor() {
     };
 
     try {
-      const res = await fetch("http://localhost:8000/sector/predict", {
+      const res = await fetch(`${API_BASE}/sector/predict`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

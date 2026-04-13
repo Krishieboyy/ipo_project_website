@@ -100,7 +100,7 @@ export default function Srcc() {
 
       console.log("payload:", payload);
 
-      const res = await fetch("http://localhost:8000/ipo/predict", {
+      const res = await fetch(`${API_BASE}/ipo/predict`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
