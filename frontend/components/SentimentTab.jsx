@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 const API_BASE = import.meta.env.VITE_API_BASE;
 const WS_BASE = import.meta.env.VITE_WS_BASE;
+const WS_URL = `${WS_BASE}/sentiment/ws/v_t_stream`;
 import {
   Chart,
   LineController,
