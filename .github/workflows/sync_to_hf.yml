@@ -2,18 +2,23 @@ name: Sync to Hugging Face hub
 on:
   push:
     branches: [main]
-  # This lets you trigger the sync manually from the Actions tab
   workflow_dispatch:
 
 jobs:
   sync-to-hub:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          lfs: true
+          lfs: true # This is the key part!
+
+      - name: Install LFS
+        run: git lfs install
+
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push --force https://somita:$HF_TOKEN@huggingface.co/spaces/somita/ipo-prediction-backend main
+        # We add 'git lfs push' before the regular push
+        run: |
+          git push --force https://somita:$HF_TOKEN@huggingface.co/spaces/somita/ipo-prediction-backend main
