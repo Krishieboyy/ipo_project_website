@@ -1,3 +1,9 @@
+---
+title: IPO Prediction Backend
+sdk: docker
+app_port: 7860
+---
+
 cd backend
 
 # Create virtual environment
