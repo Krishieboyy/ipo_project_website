@@ -11,21 +11,20 @@ export default function MainTabs() {
   const [activeTab, setActiveTab] = useState("srcc");
 
   const tabBtn = (isActive) =>
-    `px-6 py-3 rounded-full text-sm font-semibold transition ${
+    `px-5 py-2 text-sm font-medium transition-all duration-100 border ${
       isActive
-        ? "bg-[#F0B90B] text-black"
-        : "bg-transparent text-gray-400 border border-[#2B3139] hover:text-white"
+        ? "bg-[#F0B90B] text-black border-[#F0B90B]"
+        : "bg-transparent text-[#555] border-[#222] hover:text-[#F0B90B] hover:border-[#F0B90B44]"
     }`;
 
   const renderTabContent = () => {
-    // Render the active tab's content
     switch (activeTab) {
       case "srcc":
         return <Srcc />;
       case "fec":
         return <FEC />;
       case "sectorwise":
-        return <Sectorwise />
+        return <Sectorwise />;
       case "sentiment":
       default:
         return <SentimentTab />;
@@ -33,42 +32,38 @@ export default function MainTabs() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white px-4 py-8">
+    <div className="min-h-screen bg-[#0a0a0a] text-white px-4 py-8">
 
-      <div className="max-w-6xl mx-auto mb-6 flex justify-center gap-4">
-        
-        <button
-          className={tabBtn(activeTab === "srcc")}
-          onClick={() => setActiveTab("srcc")}
-        >
-          IPO Evaluator
-        </button>
-
-        <button
-          className={tabBtn(activeTab === "sentiment")}
-          onClick={() => setActiveTab("sentiment")}
-        >
-          Sentiment Analysis
-        </button>
-
-        <button
-          className={tabBtn(activeTab === "fec")}
-          onClick={() => setActiveTab("fec")}
-        >
-          Deep Analysis
-        </button>
-        <button
-          className={tabBtn(activeTab === "sectorwise")}
-          onClick={() => setActiveTab("sectorwise")}
-        >
-          Sector wise analysis
-        </button>
-        
+      {/* site header */}
+      <div className="max-w-6xl mx-auto mb-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="/web-logo.png" alt="IPOVision" className="h-8 w-8" />
+            <span className="text-2xl font-bold tracking-tight text-white">IPOVision</span>
+          </div>
+          <span className="text-[10px] text-[#2a2a2a] tracking-widest">v0.1.0</span>
+        </div>
+        <div className="mt-3 h-px bg-[#161616]" />
       </div>
 
+      {/* tabs */}
+      <div className="max-w-6xl mx-auto mb-8 flex flex-wrap gap-2">
+        <button className={tabBtn(activeTab === "srcc")} onClick={() => setActiveTab("srcc")}>
+          &gt; IPO_Evaluator
+        </button>
+        <button className={tabBtn(activeTab === "sentiment")} onClick={() => setActiveTab("sentiment")}>
+          &gt; Sentiment
+        </button>
+        <button className={tabBtn(activeTab === "fec")} onClick={() => setActiveTab("fec")}>
+          &gt; Deep_Analysis
+        </button>
+        <button className={tabBtn(activeTab === "sectorwise")} onClick={() => setActiveTab("sectorwise")}>
+          &gt; Sectorwise
+        </button>
+      </div>
 
       {renderTabContent()}
-      
+
     </div>
   );
 }
