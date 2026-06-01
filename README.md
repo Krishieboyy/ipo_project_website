@@ -27,7 +27,7 @@ The platform provides multiple independent analysis engines for evaluating IPO p
 
 WebApp Link - https://ipo-project-website.vercel.app/
 
-Built by **FEC @ Indian Institute of Technology (IIT) Guwahati**.
+Built by **FEC @ Indian Institute of Technology (IIT) Guwahati**
 
 ---
 
